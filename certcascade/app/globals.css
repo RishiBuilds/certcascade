@@ -1,19 +1,29 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Great+Vibes&family=Dancing+Script:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Great+Vibes&family=Dancing+Script:wght@400;700&family=Montserrat:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+@theme {
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+}
+
 :root {
-  background: #ffffff;
   --nav-height: 60px;
   --body-height: calc(100dvh - 61px);
   --bg: #fff4df;
   --primary: #141414;
-  --brand-orange: #E8884A;
-  --brand-orange-ink: #B8531A;
+  --brand-orange: #e8884a;
+  --brand-orange-ink: #b8531a;
   --text: #000000;
   --text-gray: #4a5565;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -23,9 +33,15 @@ body {
   margin: 0;
 }
 
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #f0b98f var(--bg);
+}
+
 body {
   font-family: "Poppins", Arial, Helvetica, sans-serif;
   color: #111827;
+  background: #ffffff;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -40,37 +56,32 @@ textarea {
   background: color-mix(in srgb, var(--brand-orange) 35%, transparent);
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f0b98f;
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-orange);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
-  }
-}
-
-@layer base {
-  h1 {
-    @apply text-4xl font-bold tracking-tight;
-  }
-
-  h2 {
-    @apply text-3xl font-bold tracking-tight;
-  }
-
-  h3 {
-    @apply text-2xl font-semibold;
-  }
-
-  h4 {
-    @apply text-xl font-semibold;
-  }
-
-  h5 {
-    @apply text-lg font-medium;
-  }
-
-  p {
-    @apply text-base leading-7;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }
