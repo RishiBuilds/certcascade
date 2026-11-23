@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Footer from "@/components/Footer/Footer";
+import Navbar from "@/components/Navbar/Navbar";
 
 const siteName = "CertCascade";
 const description =
@@ -22,26 +24,23 @@ export const metadata: Metadata = {
     "ID card generator",
     "CSV to certificates",
   ],
-
   icons: {
     icon: "/favicon.ico",
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
-
   openGraph: {
     type: "website",
     siteName,
     title: siteName,
     description: "Generate professional certificates in bulk with ease.",
-    images: [{ url: "/logo.svg", alt: `${siteName} logo` }],
+    images: [{ url: "/logo.png", alt: `${siteName} logo` }],
   },
-
   twitter: {
     card: "summary",
     title: siteName,
     description: "Generate professional certificates in bulk with ease.",
-    images: ["/logo.svg"],
+    images: ["/logo.png"],
   },
 };
 
@@ -57,7 +56,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex min-h-dvh flex-col bg-white text-gray-900 antialiased">
-        {children}
+        <Navbar />
+        <div className="flex flex-1 flex-col">{children}</div>
+        <Footer />
       </body>
     </html>
   );

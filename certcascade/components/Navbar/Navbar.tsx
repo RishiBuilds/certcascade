@@ -4,12 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Container from "@/components/shared/Container";
 
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "FAQs", href: "/faqs" },
   { label: "Blogs", href: "/blogs" },
-  { label: "Reviews", href: "/reviews" },
 ];
 
 const focusRing =
@@ -17,9 +17,8 @@ const focusRing =
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [openOn, setOpenOn] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const menuOpen = openOn === pathname;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -29,12 +28,14 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (!menuOpen) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpenOn(null);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
@@ -44,115 +45,115 @@ const Navbar = () => {
 
   return (
     <header
-      className={`sticky top-0 z-20 border-b bg-white/80 backdrop-blur-md transition-shadow duration-200 ${
-        scrolled
-          ? "border-gray-200 shadow-sm"
-          : "border-gray-200/70 shadow-none"
+      className={`sticky top-0 z-30 border-b bg-white/90 backdrop-blur-md transition-shadow duration-200 ${
+        scrolled ? "border-gray-200 shadow-sm" : "border-gray-200/60 shadow-none"
       }`}
     >
-      <nav
-        aria-label="Main"
-        className="flex h-(--nav-height) items-center justify-between px-5 sm:px-12 lg:px-24"
-      >
-        <Link
-          href="/"
-          className={`group flex items-center gap-2.5 rounded-lg ${focusRing}`}
+      <Container>
+        <nav
+          aria-label="Main"
+          className="flex h-(--nav-height) items-center justify-between"
         >
-          <Image
-            src="/logo.svg"
-            alt="CertCascade logo"
-            width={40}
-            height={40}
-            priority
-            className="transition-transform duration-150 group-hover:-rotate-3"
-          />
-          <span className="text-xl font-black tracking-tight text-gray-900">
-            Cert<span className="text-(--brand-orange)">Cascade</span>
-          </span>
-        </Link>
+          <Link
+            href="/"
+            className={`group flex items-center gap-2.5 rounded-lg ${focusRing}`}
+          >
+            <Image
+              src="/logo.svg"
+              alt="CertCascade logo"
+              width={36}
+              height={36}
+              priority
+              className="transition-transform duration-150 group-hover:-rotate-3"
+            />
+            <span className="text-xl font-extrabold tracking-tight text-gray-900">
+              Cert<span className="text-(--brand-orange)">Cascade</span>
+            </span>
+          </Link>
 
-        <ul className="hidden h-full items-stretch gap-2 md:flex">
-          {navLinks.map((link) => {
-            const active = isActive(link.href);
-
-            return (
-              <li key={link.href} className="flex">
-                <Link
-                  href={link.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`group/link relative flex h-full items-center px-3 text-sm font-medium transition-colors duration-150 ${focusRing} ${
-                    active
-                      ? "text-(--brand-orange)"
-                      : "text-(--text-gray) hover:text-gray-900"
-                  }`}
-                >
-                  {link.label}
-                  <span
-                    aria-hidden="true"
-                    className={`absolute inset-x-3 bottom-0 h-0.5 origin-left rounded-full bg-(--brand-orange) transition-transform duration-200 ${
+          <ul className="hidden h-full items-stretch gap-1 md:flex">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <li key={link.href} className="flex">
+                  <Link
+                    href={link.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`group/link relative flex h-full items-center px-3 text-sm font-medium transition-colors duration-150 ${focusRing} ${
                       active
-                        ? "scale-x-100"
-                        : "scale-x-0 group-hover/link:scale-x-100"
+                        ? "text-(--brand-orange-ink)"
+                        : "text-(--text-gray) hover:text-gray-900"
                     }`}
-                  />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                  >
+                    {link.label}
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-x-3 bottom-0 h-0.5 origin-left rounded-full bg-(--brand-orange) transition-transform duration-200 ${
+                        active ? "scale-x-100" : "scale-x-0 group-hover/link:scale-x-100"
+                      }`}
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
 
-        <button
-          type="button"
-          className={`flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg transition-colors hover:bg-gray-100 md:hidden ${focusRing}`}
-          onClick={() => setOpenOn(menuOpen ? null : pathname)}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          aria-controls="mobile-menu"
-        >
-          <span
-            className={`block h-0.5 w-6 rounded-full bg-gray-900 transition-transform duration-200 ${
-              menuOpen ? "translate-y-2 rotate-45" : ""
-            }`}
-          />
-          <span
-            className={`block h-0.5 w-6 rounded-full bg-gray-900 transition-opacity duration-200 ${
-              menuOpen ? "opacity-0" : ""
-            }`}
-          />
-          <span
-            className={`block h-0.5 w-6 rounded-full bg-gray-900 transition-transform duration-200 ${
-              menuOpen ? "-translate-y-2 -rotate-45" : ""
-            }`}
-          />
-        </button>
-      </nav>
+          <button
+            type="button"
+            className={`flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg transition-colors hover:bg-gray-100 md:hidden ${focusRing}`}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+          >
+            <span
+              className={`block h-0.5 w-5 rounded-full bg-gray-900 transition-transform duration-200 ${
+                menuOpen ? "translate-y-[7px] rotate-45" : ""
+              }`}
+            />
+            <span
+              className={`block h-0.5 w-5 rounded-full bg-gray-900 transition-opacity duration-200 ${
+                menuOpen ? "opacity-0" : ""
+              }`}
+            />
+            <span
+              className={`block h-0.5 w-5 rounded-full bg-gray-900 transition-transform duration-200 ${
+                menuOpen ? "-translate-y-[7px] -rotate-45" : ""
+              }`}
+            />
+          </button>
+        </nav>
+      </Container>
 
       {menuOpen && (
-        <ul
+        <div
           id="mobile-menu"
-          className="absolute left-0 top-full w-full border-b border-gray-200 bg-white px-3 py-2 shadow-lg md:hidden"
+          className="border-t border-gray-200 bg-white shadow-md md:hidden"
         >
-          {navLinks.map((link) => {
-            const active = isActive(link.href);
-
-            return (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  onClick={() => setOpenOn(null)}
-                  aria-current={active ? "page" : undefined}
-                  className={`block rounded-lg px-3 py-3 text-base font-medium transition-colors ${focusRing} ${
-                    active
-                      ? "bg-orange-50 text-(--brand-orange)"
-                      : "text-(--text-gray) hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+          <Container>
+            <ul className="flex flex-col py-2">
+              {navLinks.map((link) => {
+                const active = isActive(link.href);
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={`block min-h-[44px] rounded-lg px-3 py-3 text-sm font-medium transition-colors ${focusRing} ${
+                        active
+                          ? "bg-orange-50 text-(--brand-orange-ink)"
+                          : "text-(--text-gray) hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </Container>
+        </div>
       )}
     </header>
   );
