@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/logo.svg" alt="CertCascade logo" width="76" />
+<img src="certcascade/public/logo.svg" alt="CertCascade logo" width="76" />
 
 # CertCascade
 
