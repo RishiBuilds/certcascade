@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+<img src="public/logo.svg" alt="CertCascade logo" width="76" />
 
-First, run the development server:
+# CertCascade
+
+**Generate certificates, report cards, IDs, and more in bulk. Free.**
+
+Upload a design once, connect a CSV, and download hundreds of personalized documents in one go.
+
+</div>
+
+---
+
+## How it works
+
+1. **Upload your template.** Add a PNG or JPG of your certificate, report card, or ID design.
+2. **Add your data.** Upload a CSV (up to 5 MB) or paste it in. The first row holds the column names, and each row after it becomes one document.
+3. **Place your fields.** Click a column to add it to the design, then drag it into position. Set the font, size, color, bold, italic, underline, and exact position for each field.
+4. **Preview.** Step through your rows to see how each document will look with real data. Edit any cell in the built-in table if something needs fixing.
+5. **Generate.** CertCascade renders every row onto your template and downloads everything as a single ZIP.
+
+Everything runs in your browser, so your template and data are never sent to a server.
+
+## Tech stack
+
+- [Next.js](https://nextjs.org) and [React](https://react.dev) with TypeScript
+- [Tailwind CSS](https://tailwindcss.com) v4
+- HTML Canvas for rendering
+- [PapaParse](https://www.papaparse.com) for CSV parsing
+- [JSZip](https://stuk.github.io/jszip/) for bundling downloads
+
+## Getting started
 
 ```bash
+git clone https://github.com/RishiBuilds/certcascade.git
+cd certcascade
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+<div align="center">
 
-## Learn More
+Built by [✦ RISHI](https://github.com/RishiBuilds)
 
-To learn more about Next.js, take a look at the following resources:
+[X (@rishitwts\_)](https://x.com/rishitwts_) · [rishi.chaurasia.dev@gmail.com](mailto:rishi.chaurasia.dev@gmail.com)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+</div>
