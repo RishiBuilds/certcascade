@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import Link from "next/link";
 import { GoUpload } from "react-icons/go";
 import { BsGithub, BsStarFill } from "react-icons/bs";
 import {
