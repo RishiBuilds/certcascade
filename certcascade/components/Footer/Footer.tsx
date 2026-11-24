@@ -11,6 +11,7 @@ const pages: FooterLinkItem[] = [
   { label: "Home", href: "/" },
   { label: "FAQs", href: "/faqs" },
   { label: "Blogs", href: "/blogs" },
+  { label: "Reviews", href: "/reviews" },
 ];
 
 const contact: FooterLinkItem[] = [
