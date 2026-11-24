@@ -4,9 +4,11 @@
 
 # CertCascade
 
-**Generate certificates, report cards, IDs, and more in bulk. Free.**
+**Generate bulk certificates, report cards, and ID cards in seconds — upload a template, add a CSV, download a ZIP. Free, no sign-up, runs entirely in your browser.**
 
 Upload a design once, connect a CSV, and download hundreds of personalized documents in one go.
+
+<!-- Off Campus verification: 9M445N -->
 
 </div>
 
