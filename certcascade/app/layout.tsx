@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import Footer from "@/components/Footer/Footer";
 import Navbar from "@/components/Navbar/Navbar";
+import Footer from "@/components/Footer/Footer";
 
 const siteName = "CertCascade";
 const description =
@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   },
   description,
   applicationName: siteName,
+  authors: [{ name: "Rishi Chaurasia", url: "https://github.com/RishiBuilds" }],
   keywords: [
     "bulk certificate generator",
     "certificate maker",
@@ -26,21 +27,21 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: "/favicon.ico",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
   openGraph: {
     type: "website",
     siteName,
     title: siteName,
     description: "Generate professional certificates in bulk with ease.",
-    images: [{ url: "/logo.png", alt: `${siteName} logo` }],
+    images: [{ url: "/logo.svg", alt: `${siteName} logo` }],
   },
   twitter: {
     card: "summary",
     title: siteName,
     description: "Generate professional certificates in bulk with ease.",
-    images: ["/logo.png"],
+    images: ["/logo.svg"],
   },
 };
 
@@ -55,9 +56,29 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+      </head>
       <body className="flex min-h-dvh flex-col bg-white text-gray-900 antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        >
+          Skip to content
+        </a>
         <Navbar />
-        <div className="flex flex-1 flex-col">{children}</div>
+        <div
+          id="main-content"
+          tabIndex={-1}
+          className="flex flex-1 flex-col outline-none"
+        >
+          {children}
+        </div>
         <Footer />
       </body>
     </html>
