@@ -1,6 +1,17 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  GoChevronLeft,
+  GoChevronRight,
+  GoDownload,
+  GoSync,
+} from "react-icons/go";
+import {
+  HiOutlineMinus,
+  HiOutlinePlus,
+  HiOutlineQuestionMarkCircle,
+} from "react-icons/hi";
+import {
   CertificateInterface,
   CsvResult,
   _type_TextField,
@@ -15,6 +26,60 @@ interface Props {
   onSelectField: (id: string | null) => void;
   onMoveField: (id: string, x: number, y: number) => void;
   show_prev_next_navigation: boolean;
+  onReselect?: () => void;
+}
+
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 4;
+const ZOOM_STEP = 0.25;
+const SNAP_THRESHOLD = 0.008;
+const NUDGE = 0.002;
+const NUDGE_FAST = 0.01;
+const ACCENT = "#E8884A";
+
+const focusRing =
+  "outline-none focus-visible:ring-2 focus-visible:ring-(--brand-orange)/40";
+const iconButton = `flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent ${focusRing}`;
+
+const shortcuts: { keys: string; action: string }[] = [
+  { keys: "Arrow keys", action: "Nudge the selected field" },
+  { keys: "Shift + arrows", action: "Nudge 5 times further" },
+  { keys: "Left / Right", action: "Previous / next row when nothing is selected" },
+  { keys: "Page Up / Down", action: "Previous / next row" },
+  { keys: "+  and  -", action: "Zoom in and out" },
+  { keys: "0", action: "Fit to screen" },
+  { keys: "Esc", action: "Deselect the field" },
+  { keys: "Hold Alt while dragging", action: "Turn off snapping" },
+];
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function setFont(ctx: CanvasRenderingContext2D, field: _type_TextField) {
+  const weight = field.bold ? "bold" : "normal";
+  const style = field.italic ? "italic" : "normal";
+  ctx.font = `${style} ${weight} ${field.fontSize}px "${field.fontFamily}"`;
+}
+
+function buildValues(
+  csvData: CsvResult | null,
+  fields: _type_TextField[],
+  index: number
+): Record<string, string> {
+  const values: Record<string, string> = {};
+
+  if (csvData?.ok) {
+    for (const header of csvData.headers) {
+      values[header] = csvData.rows[header]?.[index] ?? "";
+    }
+  } else {
+    for (const field of fields) {
+      values[field.column] = field.column;
+    }
+  }
+
+  return values;
 }
 
 function drawFields(
@@ -26,10 +91,8 @@ function drawFields(
 ) {
   for (const field of fields) {
     const text = rowValues[field.column] ?? "";
-    const weight = field.bold ? "bold" : "normal";
-    const style = field.italic ? "italic" : "normal";
 
-    ctx.font = `${style} ${weight} ${field.fontSize}px "${field.fontFamily}"`;
+    setFont(ctx, field);
     ctx.fillStyle = field.color;
     ctx.textBaseline = "top";
 
@@ -60,8 +123,11 @@ export default function TemplateEditor({
   onSelectField,
   onMoveField,
   show_prev_next_navigation = false,
+  onReselect,
 }: Props) {
   const previewRef = useRef<HTMLCanvasElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const helpRef = useRef<HTMLDivElement>(null);
 
   const draggingRef = useRef<{
     id: string;
@@ -86,6 +152,15 @@ export default function TemplateEditor({
     setIndexState({ csvData, index: 0 });
   }
 
+  const [zoom, setZoom] = useState(1);
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
+  const [hoverId, setHoverId] = useState<string | null>(null);
+  const [cursor, setCursor] = useState<"default" | "move" | "grabbing">("default");
+  const [guides, setGuides] = useState({ x: false, y: false });
+  const [jump, setJump] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+
   const totalImages = csvData?.ok
     ? Math.max(
       0,
@@ -94,6 +169,42 @@ export default function TemplateEditor({
       )
     )
     : 1;
+
+  const fit =
+    imgSize && box.w > 0 && box.h > 0
+      ? Math.min(box.w / imgSize.w, box.h / imgSize.h, 1)
+      : 1;
+  const displayScale = fit * zoom;
+
+  const goTo = useCallback(
+    (index: number) => {
+      setIndexState((prev) => ({
+        csvData: prev.csvData,
+        index: clamp(index, 0, Math.max(0, totalImages - 1)),
+      }));
+    },
+    [totalImages]
+  );
+
+  const goToPrevious = useCallback(() => {
+    setIndexState((prev) => ({
+      csvData: prev.csvData,
+      index: Math.max(0, prev.index - 1),
+    }));
+  }, []);
+
+  const goToNext = useCallback(() => {
+    setIndexState((prev) => ({
+      csvData: prev.csvData,
+      index: Math.min(Math.max(0, totalImages - 1), prev.index + 1),
+    }));
+  }, [totalImages]);
+
+  const zoomBy = useCallback((delta: number) => {
+    setZoom((z) =>
+      clamp(parseFloat((z + delta).toFixed(2)), MIN_ZOOM, MAX_ZOOM)
+    );
+  }, []);
 
   const redraw = useCallback(
     (
@@ -107,59 +218,78 @@ export default function TemplateEditor({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+
+      canvas.width = w;
+      canvas.height = h;
 
       ctx.drawImage(img, 0, 0);
 
-      const previewValues: Record<string, string> = {};
+      const previewValues = buildValues(csvData, currentFields, currentIndex);
 
-      if (csvData?.ok) {
-        for (const header of csvData.headers) {
-          previewValues[header] =
-            csvData.rows[header]?.[currentIndex] ?? "";
-        }
-      } else {
-        for (const field of currentFields) {
-          previewValues[field.column] = field.column;
-        }
-      }
+      drawFields(ctx, currentFields, previewValues, w, h);
 
-      drawFields(
-        ctx,
-        currentFields,
-        previewValues,
-        img.naturalWidth,
-        img.naturalHeight
-      );
+      const unit = 1 / Math.max(displayScale, 0.05);
 
       for (const field of currentFields) {
-        if (field.id !== selectedId) continue;
+        const isSelected = field.id === selectedId;
+        const isHover = field.id === hoverId && !isSelected;
 
-        const weight = field.bold ? "bold" : "normal";
-        const style = field.italic ? "italic" : "normal";
+        if (!isSelected && !isHover) continue;
 
-        ctx.font = `${style} ${weight} ${field.fontSize}px "${field.fontFamily}"`;
+        setFont(ctx, field);
 
         const text = previewValues[field.column] ?? field.column;
         const textWidth = ctx.measureText(text).width;
         const textHeight = field.fontSize * 1.2;
 
-        const px = field.x * img.naturalWidth;
-        const py = field.y * img.naturalHeight;
+        const px = field.x * w;
+        const py = field.y * h;
 
-        ctx.strokeStyle = "#2563eb";
-        ctx.lineWidth = 2;
+        ctx.save();
+        ctx.strokeStyle = ACCENT;
+        ctx.lineWidth = (isSelected ? 2 : 1.5) * unit;
+        if (isHover) ctx.setLineDash([6 * unit, 4 * unit]);
         ctx.strokeRect(
-          px - 2,
-          py - 2,
-          textWidth + 4,
-          textHeight + 4
+          px - 2 * unit,
+          py - 2 * unit,
+          textWidth + 4 * unit,
+          textHeight + 4 * unit
         );
+        ctx.restore();
+      }
+
+      if (guides.x || guides.y) {
+        ctx.save();
+        ctx.strokeStyle = ACCENT;
+        ctx.lineWidth = unit;
+        ctx.setLineDash([6 * unit, 4 * unit]);
+
+        if (guides.x) {
+          ctx.beginPath();
+          ctx.moveTo(w / 2, 0);
+          ctx.lineTo(w / 2, h);
+          ctx.stroke();
+        }
+
+        if (guides.y) {
+          ctx.beginPath();
+          ctx.moveTo(0, h / 2);
+          ctx.lineTo(w, h / 2);
+          ctx.stroke();
+        }
+
+        ctx.restore();
       }
     },
-    [csvData, currentIndex, selectedId, imgRef]
+    [csvData, currentIndex, selectedId, hoverId, guides, displayScale, imgRef]
   );
+
+  const redrawRef = useRef(redraw);
+  useEffect(() => {
+    redrawRef.current = redraw;
+  }, [redraw]);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,7 +299,8 @@ export default function TemplateEditor({
       if (cancelled) return;
 
       imgRef.current = img;
-      redraw(fieldsRef.current, img);
+      setImgSize({ w: img.naturalWidth, h: img.naturalHeight });
+      redrawRef.current(fieldsRef.current, img);
     };
 
     img.onerror = () => {
@@ -181,29 +312,177 @@ export default function TemplateEditor({
     return () => {
       cancelled = true;
     };
-  }, [certificate.url, imgRef, redraw]);
+  }, [certificate.url, imgRef]);
 
   useEffect(() => {
     redraw(fields);
-  }, [fields, selectedId, redraw]);
+  }, [fields, redraw]);
 
-  function goToPrevious() {
-    setIndexState((prev) => ({
-      csvData: prev.csvData,
-      index: Math.max(0, prev.index - 1),
-    }));
-  }
+  const fontSignature = Array.from(
+    new Set(
+      fields.map(
+        (f) =>
+          `${f.italic ? "italic" : "normal"} ${f.bold ? "bold" : "normal"} 16px "${f.fontFamily}"`
+      )
+    )
+  ).join("|");
 
-  function goToNext() {
-    setIndexState((prev) => ({
-      csvData: prev.csvData,
-      index: Math.min(Math.max(0, totalImages - 1), prev.index + 1),
-    }));
-  }
+  useEffect(() => {
+    if (!fontSignature || typeof document === "undefined" || !document.fonts) {
+      return;
+    }
 
-  function toNorm(e: React.MouseEvent<HTMLCanvasElement>) {
+    let cancelled = false;
+
+    Promise.all(
+      fontSignature.split("|").map((spec) => document.fonts.load(spec))
+    )
+      .then(() => {
+        if (!cancelled) redrawRef.current(fieldsRef.current);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fontSignature]);
+
+  useEffect(() => {
+    const node = viewportRef.current;
+    if (!node) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const rect = entries[0]?.contentRect;
+      if (rect) setBox({ w: rect.width, h: rect.height });
+    });
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!helpOpen) return;
+
+    function onPointerDown(e: PointerEvent) {
+      if (helpRef.current && !helpRef.current.contains(e.target as Node)) {
+        setHelpOpen(false);
+      }
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setHelpOpen(false);
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [helpOpen]);
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        zoomBy(ZOOM_STEP);
+        return;
+      }
+
+      if (e.key === "-" || e.key === "_") {
+        e.preventDefault();
+        zoomBy(-ZOOM_STEP);
+        return;
+      }
+
+      if (e.key === "0") {
+        e.preventDefault();
+        setZoom(1);
+        return;
+      }
+
+      if (e.key === "Escape") {
+        onSelectField(null);
+        return;
+      }
+
+      if (show_prev_next_navigation) {
+        if (e.key === "PageUp") {
+          e.preventDefault();
+          goToPrevious();
+          return;
+        }
+
+        if (e.key === "PageDown") {
+          e.preventDefault();
+          goToNext();
+          return;
+        }
+      }
+
+      const arrows = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+      if (!arrows.includes(e.key)) return;
+
+      const field = selectedId
+        ? fieldsRef.current.find((f) => f.id === selectedId)
+        : undefined;
+
+      if (field) {
+        e.preventDefault();
+
+        const step = e.shiftKey ? NUDGE_FAST : NUDGE;
+        const dx =
+          e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dy =
+          e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+
+        onMoveField(
+          field.id,
+          clamp(field.x + dx, 0, 0.98),
+          clamp(field.y + dy, 0, 0.98)
+        );
+        return;
+      }
+
+      if (show_prev_next_navigation) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          goToPrevious();
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          goToNext();
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [
+    selectedId,
+    show_prev_next_navigation,
+    goToPrevious,
+    goToNext,
+    zoomBy,
+    onMoveField,
+    onSelectField,
+  ]);
+
+  function toNorm(e: React.PointerEvent<HTMLCanvasElement>) {
     const canvas = previewRef.current!;
-
     const rect = canvas.getBoundingClientRect();
 
     return {
@@ -212,123 +491,382 @@ export default function TemplateEditor({
     };
   }
 
-  function onMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
-    const { nx, ny } = toNorm(e);
+  function hitTest(nx: number, ny: number) {
     const img = imgRef.current;
     const canvas = previewRef.current;
 
-    if (!img || !canvas) return;
+    if (!img || !canvas) return null;
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
 
     const currentFields = fieldsRef.current;
+    const values = buildValues(csvData, currentFields, currentIndex);
 
     for (let i = currentFields.length - 1; i >= 0; i--) {
       const field = currentFields[i];
 
-      const weight = field.bold ? "bold" : "normal";
-      const style = field.italic ? "italic" : "normal";
+      setFont(ctx, field);
 
-      ctx.font = `${style} ${weight} ${field.fontSize}px "${field.fontFamily}"`;
-
-      const previewVal = csvData?.ok
-        ? csvData.rows[field.column]?.[currentIndex] ?? ""
-        : field.column;
-
-      const textWidth =
-        ctx.measureText(previewVal).width / img.naturalWidth;
-
-      const textHeight =
-        (field.fontSize * 1.2) / img.naturalHeight;
+      const text = values[field.column] ?? "";
+      const textWidth = ctx.measureText(text).width / img.naturalWidth;
+      const textHeight = (field.fontSize * 1.2) / img.naturalHeight;
 
       if (
         nx >= field.x &&
-        nx <= field.x + textWidth &&
+        nx <= field.x + Math.max(textWidth, 0.01) &&
         ny >= field.y &&
         ny <= field.y + textHeight
       ) {
-        onSelectField(field.id);
-
-        draggingRef.current = {
-          id: field.id,
-          ox: nx - field.x,
-          oy: ny - field.y,
-        };
-
-        return;
+        return field;
       }
     }
 
-    onSelectField(null);
+    return null;
   }
 
-  function onMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
-    const drag = draggingRef.current;
-
-    if (!drag) return;
+  function onPointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
 
     const { nx, ny } = toNorm(e);
+    const hit = hitTest(nx, ny);
 
-    onMoveField(
-      drag.id,
-      Math.max(0, Math.min(0.98, nx - drag.ox)),
-      Math.max(0, Math.min(0.98, ny - drag.oy))
+    if (!hit) {
+      onSelectField(null);
+      return;
+    }
+
+    onSelectField(hit.id);
+
+    draggingRef.current = {
+      id: hit.id,
+      ox: nx - hit.x,
+      oy: ny - hit.y,
+    };
+
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setCursor("grabbing");
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
+    const { nx, ny } = toNorm(e);
+    const drag = draggingRef.current;
+
+    if (!drag) {
+      if (e.pointerType !== "mouse") return;
+
+      const hit = hitTest(nx, ny);
+      setHoverId(hit ? hit.id : null);
+      setCursor(hit ? "move" : "default");
+      return;
+    }
+
+    let x = clamp(nx - drag.ox, 0, 0.98);
+    let y = clamp(ny - drag.oy, 0, 0.98);
+    let snapX = false;
+    let snapY = false;
+
+    const img = imgRef.current;
+    const canvas = previewRef.current;
+    const field = fieldsRef.current.find((f) => f.id === drag.id);
+    const ctx = canvas?.getContext("2d");
+
+    if (!e.altKey && img && field && ctx) {
+      setFont(ctx, field);
+
+      const values = buildValues(csvData, fieldsRef.current, currentIndex);
+      const text = values[field.column] ?? "";
+      const widthN = ctx.measureText(text).width / img.naturalWidth;
+      const heightN = (field.fontSize * 1.2) / img.naturalHeight;
+
+      if (Math.abs(x + widthN / 2 - 0.5) < SNAP_THRESHOLD) {
+        x = clamp(0.5 - widthN / 2, 0, 0.98);
+        snapX = true;
+      }
+
+      if (Math.abs(y + heightN / 2 - 0.5) < SNAP_THRESHOLD) {
+        y = clamp(0.5 - heightN / 2, 0, 0.98);
+        snapY = true;
+      }
+    }
+
+    setGuides((prev) =>
+      prev.x === snapX && prev.y === snapY ? prev : { x: snapX, y: snapY }
+    );
+
+    onMoveField(drag.id, x, y);
+  }
+
+  function endDrag(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (draggingRef.current) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        return;
+      } finally {
+        draggingRef.current = null;
+        setGuides({ x: false, y: false });
+        setCursor("default");
+      }
+    }
+  }
+
+  function onPointerLeave() {
+    if (!draggingRef.current) {
+      setHoverId(null);
+      setCursor("default");
+    }
+  }
+
+  function commitJump() {
+    const value = parseInt(jump ?? "", 10);
+    if (!Number.isNaN(value)) goTo(value - 1);
+    setJump(null);
+  }
+
+  function downloadCurrent() {
+    const img = imgRef.current;
+    if (!img) return;
+
+    const offscreen = document.createElement("canvas");
+    offscreen.width = img.naturalWidth;
+    offscreen.height = img.naturalHeight;
+
+    const ctx = offscreen.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(img, 0, 0);
+
+    const values = buildValues(csvData, fields, currentIndex);
+    drawFields(ctx, fields, values, offscreen.width, offscreen.height);
+
+    const isPng = certificate.type === "image/png";
+    const mimeType = isPng ? "image/png" : "image/jpeg";
+    const ext = isPng ? "png" : "jpg";
+
+    const firstValue = fields[0] ? values[fields[0].column] ?? "" : "";
+    const safeName =
+      firstValue.replace(/[^a-z0-9_-]/gi, "_").slice(0, 60) ||
+      `certificate_${currentIndex + 1}`;
+
+    offscreen.toBlob(
+      (blob) => {
+        if (!blob) return;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${safeName}.${ext}`;
+        a.click();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      mimeType,
+      0.95
     );
   }
 
-  function onMouseUp() {
-    draggingRef.current = null;
-  }
+  const cursorClass =
+    cursor === "grabbing"
+      ? "cursor-grabbing"
+      : cursor === "move"
+        ? "cursor-move"
+        : "cursor-default";
+
+  const canvasStyle: React.CSSProperties | undefined = imgSize
+    ? {
+      width: imgSize.w * displayScale,
+      height: imgSize.h * displayScale,
+    }
+    : undefined;
 
   return (
-    <div className="relative flex flex-1 items-center justify-center overflow-auto bg-gray-100 p-6">
-      <div className="absolute left-0 top-0 z-10 m-1">
+    <div className="flex min-h-0 flex-1 flex-col bg-gray-100">
+      <div
+        role="toolbar"
+        aria-label="Editor tools"
+        className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-gray-200 bg-white px-4 py-2.5"
+      >
         <button
           type="button"
-          onClick={() => window.location.reload()}
-          className="cursor-pointer rounded-sm bg-white p-2 text-(--text-gray) transition-all duration-100 ease-in hover:scale-105 hover:text-black"
+          onClick={() => (onReselect ? onReselect() : window.location.reload())}
+          className={`flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 ${focusRing}`}
         >
+          <GoSync aria-hidden="true" className="h-4 w-4" />
           Re-select
         </button>
+
+        {show_prev_next_navigation && (
+          <div
+            role="group"
+            aria-label="Row navigation"
+            className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-0.5"
+          >
+            <button
+              type="button"
+              onClick={goToPrevious}
+              disabled={currentIndex === 0 || totalImages === 0}
+              aria-label="Previous row"
+              className={iconButton}
+            >
+              <GoChevronLeft aria-hidden="true" className="h-4 w-4" />
+            </button>
+
+            <label className="flex items-center gap-1.5 text-sm text-gray-700">
+              <span className="sr-only">Row number</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={jump ?? String(totalImages > 0 ? currentIndex + 1 : 0)}
+                onFocus={(e) => e.currentTarget.select()}
+                onChange={(e) => setJump(e.target.value.replace(/\D/g, ""))}
+                onBlur={commitJump}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitJump();
+                    e.currentTarget.blur();
+                  }
+                  if (e.key === "Escape") {
+                    setJump(null);
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="h-8 w-12 rounded-md border border-transparent bg-gray-50 text-center text-sm tabular-nums outline-none transition-colors focus:border-(--brand-orange) focus:bg-white"
+              />
+              <span className="pr-1 tabular-nums">of {totalImages}</span>
+            </label>
+
+            <button
+              type="button"
+              onClick={goToNext}
+              disabled={totalImages === 0 || currentIndex >= totalImages - 1}
+              aria-label="Next row"
+              className={iconButton}
+            >
+              <GoChevronRight aria-hidden="true" className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          <div
+            role="group"
+            aria-label="Zoom"
+            className="flex items-center gap-0.5 rounded-lg border border-gray-200 bg-white p-0.5"
+          >
+            <button
+              type="button"
+              onClick={() => zoomBy(-ZOOM_STEP)}
+              disabled={zoom <= MIN_ZOOM}
+              aria-label="Zoom out"
+              className={iconButton}
+            >
+              <HiOutlineMinus aria-hidden="true" className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setZoom(1)}
+              title="Fit to screen"
+              aria-label={`Zoom ${Math.round(displayScale * 100)} percent. Fit to screen`}
+              className={`h-8 min-w-14 cursor-pointer rounded-md px-2 text-sm font-medium tabular-nums text-gray-700 transition-colors hover:bg-gray-100 ${focusRing}`}
+            >
+              {Math.round(displayScale * 100)}%
+            </button>
+
+            <button
+              type="button"
+              onClick={() => zoomBy(ZOOM_STEP)}
+              disabled={zoom >= MAX_ZOOM}
+              aria-label="Zoom in"
+              className={iconButton}
+            >
+              <HiOutlinePlus aria-hidden="true" className="h-4 w-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={downloadCurrent}
+            disabled={!imgSize}
+            title="Download this document as an image"
+            className={`flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
+          >
+            <GoDownload aria-hidden="true" className="h-4 w-4" />
+            <span className="hidden lg:inline">Download this one</span>
+            <span className="sr-only lg:hidden">Download this document</span>
+          </button>
+
+          <div ref={helpRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setHelpOpen((open) => !open)}
+              aria-expanded={helpOpen}
+              aria-controls="editor-shortcuts"
+              aria-label="Keyboard shortcuts"
+              className={iconButton}
+            >
+              <HiOutlineQuestionMarkCircle aria-hidden="true" className="h-5 w-5" />
+            </button>
+
+            {helpOpen && (
+              <div
+                id="editor-shortcuts"
+                role="dialog"
+                aria-label="Keyboard shortcuts"
+                className="absolute right-0 top-full z-30 mt-2 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+              >
+                <h2 className="text-sm font-semibold text-gray-900">
+                  Keyboard shortcuts
+                </h2>
+                <dl className="mt-3 space-y-2.5">
+                  {shortcuts.map((item) => (
+                    <div
+                      key={item.keys}
+                      className="flex items-start justify-between gap-3"
+                    >
+                      <dt>
+                        <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-700">
+                          {item.keys}
+                        </kbd>
+                      </dt>
+                      <dd className="text-right text-xs leading-relaxed text-(--text-gray)">
+                        {item.action}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {show_prev_next_navigation && (
-        <div className="absolute left-1/2 top-0 z-10 m-1 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-black/10 bg-white p-1 shadow-sm">
-          <button
-            type="button"
-            onClick={goToPrevious}
-            disabled={currentIndex === 0 || totalImages === 0}
-            className="cursor-pointer rounded-md px-3 py-2 text-sm text-(--text-gray) transition-colors hover:bg-gray-100 hover:text-black disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            Previous
-          </button>
-
-          <span className="min-w-14 text-center text-xs font-medium tabular-nums text-gray-600">
-            {totalImages > 0 ? currentIndex + 1 : 0} / {totalImages}
-          </span>
-
-          <button
-            type="button"
-            onClick={goToNext}
-            disabled={
-              totalImages === 0 || currentIndex >= totalImages - 1
-            }
-            className="cursor-pointer rounded-md px-3 py-2 text-sm text-(--text-gray) transition-colors hover:bg-gray-100 hover:text-black disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            Next
-          </button>
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={viewportRef}
+          className="absolute inset-0 flex overflow-auto bg-[radial-gradient(circle,#d1d5db_1px,transparent_1px)] bg-size-[20px_20px] p-6 sm:p-10"
+        >
+          <canvas
+            ref={previewRef}
+            style={canvasStyle}
+            aria-label="Template preview. Drag text fields to position them."
+            className={`m-auto max-w-none shrink-0 touch-none rounded-sm bg-white shadow-xl ring-1 ring-black/10 ${cursorClass}`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+            onPointerLeave={onPointerLeave}
+          />
         </div>
-      )}
 
-      <canvas
-        ref={previewRef}
-        className="max-h-full max-w-full cursor-crosshair shadow-xl"
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
-      />
+        {fields.length === 0 && (
+          <p className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-gray-200 bg-white px-4 py-2 text-center text-sm text-(--text-gray) shadow-sm">
+            Add data, then click a column to place it on your template.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
