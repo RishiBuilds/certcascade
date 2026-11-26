@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
+import {
+  EditorFooterGate,
+  EditorViewProvider,
+} from "@/components/shared/EditorViewContext";
 
 const siteName = "CertCascade";
 const description =
@@ -65,21 +69,25 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-dvh flex-col bg-white text-gray-900 antialiased">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-        >
-          Skip to content
-        </a>
-        <Navbar />
-        <div
-          id="main-content"
-          tabIndex={-1}
-          className="flex flex-1 flex-col outline-none"
-        >
-          {children}
-        </div>
-        <Footer />
+        <EditorViewProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-gray-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+          >
+            Skip to content
+          </a>
+          <Navbar />
+          <div
+            id="main-content"
+            tabIndex={-1}
+            className="flex min-h-0 flex-1 flex-col outline-none"
+          >
+            {children}
+          </div>
+          <EditorFooterGate>
+            <Footer />
+          </EditorFooterGate>
+        </EditorViewProvider>
       </body>
     </html>
   );

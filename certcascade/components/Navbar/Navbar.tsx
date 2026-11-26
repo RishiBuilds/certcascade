@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Container from "@/components/shared/Container";
+import { useEditorView } from "@/components/shared/EditorViewContext";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -18,6 +19,7 @@ const focusRing =
 
 const Navbar = () => {
   const pathname = usePathname();
+  const { isEditor } = useEditorView();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -44,13 +46,19 @@ const Navbar = () => {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
+  const NavWrapper = isEditor
+    ? ({ children }: { children: React.ReactNode }) => (
+        <div className="w-full px-5">{children}</div>
+      )
+    : Container;
+
   return (
     <header
       className={`sticky top-0 z-30 border-b bg-white/90 backdrop-blur-md transition-shadow duration-200 ${
         scrolled ? "border-gray-200 shadow-sm" : "border-gray-200/60 shadow-none"
       }`}
     >
-      <Container>
+      <NavWrapper>
         <nav
           aria-label="Main"
           className="flex h-(--nav-height) items-center justify-between"
@@ -67,8 +75,8 @@ const Navbar = () => {
               priority
               className="transition-transform duration-150 group-hover:-rotate-3"
             />
-            <span className="text-xl font-extrabold tracking-tight text-gray-900">
-              Cert<span className="text-(--brand-orange)">Cascade</span>
+            <span className="text-xl font-extrabold text-gray-900">
+              Cert<span className="text-(--brand-orange-ink)">Cascade</span>
             </span>
           </Link>
 
@@ -124,14 +132,14 @@ const Navbar = () => {
             />
           </button>
         </nav>
-      </Container>
+      </NavWrapper>
 
       {menuOpen && (
         <div
           id="mobile-menu"
           className="border-t border-gray-200 bg-white shadow-md md:hidden"
         >
-          <Container>
+          <NavWrapper>
             <ul className="flex flex-col py-2">
               {navLinks.map((link) => {
                 const active = isActive(link.href);
@@ -153,7 +161,7 @@ const Navbar = () => {
                 );
               })}
             </ul>
-          </Container>
+          </NavWrapper>
         </div>
       )}
     </header>
