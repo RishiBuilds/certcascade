@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { BsGithub } from "react-icons/bs";
+import Container from "@/components/shared/Container";
 
 const faqCategories = [
   {
@@ -196,12 +197,12 @@ export default function FaqsPageContent() {
 
       <section
         aria-labelledby="faq-heading"
-        className="border-b border-gray-200 bg-white px-6 py-16 text-center md:py-20"
+        className="border-b border-gray-200 bg-white py-16 text-center md:py-20"
       >
-        <div className="mx-auto max-w-2xl">
+        <Container className="max-w-2xl">
           <h1
             id="faq-heading"
-            className="text-balance text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl"
+            className="text-balance text-4xl font-extrabold text-gray-900 sm:text-5xl"
           >
             Frequently asked questions
           </h1>
@@ -215,13 +216,13 @@ export default function FaqsPageContent() {
               Email us.
             </a>
           </p>
-        </div>
+        </Container>
       </section>
 
-      <section className="bg-(--bg) px-6 py-14 md:py-16">
-        <div className="mx-auto flex max-w-5xl flex-col gap-8 lg:flex-row lg:gap-10">
+      <section className="bg-(--bg) py-16 md:py-24">
+        <Container className="flex flex-col gap-8 lg:flex-row lg:gap-10">
           <nav aria-label="FAQ categories" className="shrink-0 lg:w-60">
-            <ul className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0 lg:sticky lg:top-24">
+            <ul className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 sm:-mx-8 sm:px-8 lg:sticky lg:top-24 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
               {faqCategories.map((cat) => {
                 const active = activeCategory === cat.category;
 
@@ -231,7 +232,7 @@ export default function FaqsPageContent() {
                       type="button"
                       onClick={() => setActiveCategory(cat.category)}
                       aria-pressed={active}
-                      className={`w-full cursor-pointer whitespace-nowrap rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-colors duration-200 lg:whitespace-normal ${focusRing} ${
+                      className={`min-h-11 w-full cursor-pointer whitespace-nowrap rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-colors duration-200 lg:whitespace-normal ${focusRing} ${
                         active
                           ? "bg-(--brand-orange-ink) text-white"
                           : "bg-white text-(--text-gray) hover:bg-gray-100 hover:text-gray-900"
@@ -253,17 +254,17 @@ export default function FaqsPageContent() {
               <FaqItem key={`${current.category}-${faq.q}`} q={faq.q} a={faq.a} />
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       <section
         aria-labelledby="questions-heading"
-        className="border-t border-gray-200 bg-white px-6 py-16 text-center"
+        className="border-t border-gray-200 bg-white py-16 text-center md:py-20"
       >
-        <div className="mx-auto max-w-xl">
+        <Container className="max-w-xl">
           <h2
             id="questions-heading"
-            className="text-balance text-2xl font-bold tracking-tight text-gray-900"
+            className="text-balance text-2xl font-bold text-gray-900 sm:text-3xl"
           >
             Still have questions?
           </h2>
@@ -274,7 +275,7 @@ export default function FaqsPageContent() {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="mailto:rishi.chaurasia.dev@gmail.com"
-              className="inline-flex items-center gap-2 rounded-xl bg-(--brand-orange-ink) px-6 py-3 text-sm font-semibold text-white outline-none transition-[filter] duration-200 hover:brightness-110 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/40"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-(--brand-orange-ink) px-6 py-3 text-sm font-semibold text-white outline-none transition-[filter] duration-200 hover:brightness-110 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/40"
             >
               Email us
             </a>
@@ -282,23 +283,23 @@ export default function FaqsPageContent() {
               href="https://github.com/RishiBuilds/certcascade/issues"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-(--primary) px-6 py-3 text-sm font-semibold text-white outline-none transition-colors duration-200 hover:bg-gray-800 focus-visible:ring-4 focus-visible:ring-gray-900/30"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-(--primary) px-6 py-3 text-sm font-semibold text-white outline-none transition-colors duration-200 hover:bg-gray-800 focus-visible:ring-4 focus-visible:ring-gray-900/30"
             >
               <BsGithub aria-hidden="true" className="h-4 w-4" />
               Open an issue
             </a>
           </div>
-        </div>
+        </Container>
       </section>
 
       <section
         aria-labelledby="cta-heading"
-        className="bg-(--primary) px-6 py-16 text-center"
+        className="bg-(--primary) py-16 text-center md:py-20"
       >
-        <div className="mx-auto max-w-xl">
+        <Container className="max-w-xl">
           <h2
             id="cta-heading"
-            className="text-balance text-2xl font-bold tracking-tight text-white"
+            className="text-balance text-2xl font-bold text-white sm:text-3xl"
           >
             Ready to get started?
           </h2>
@@ -308,11 +309,11 @@ export default function FaqsPageContent() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl bg-(--brand-orange) px-6 py-3 text-sm font-semibold text-gray-900 outline-none transition-[filter] duration-200 hover:brightness-105 focus-visible:ring-4 focus-visible:ring-white/40"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-(--brand-orange) px-6 py-3 text-sm font-semibold text-gray-900 outline-none transition-[filter] duration-200 hover:brightness-105 focus-visible:ring-4 focus-visible:ring-white/40"
           >
             Try CertCascade free
           </Link>
-        </div>
+        </Container>
       </section>
     </main>
   );

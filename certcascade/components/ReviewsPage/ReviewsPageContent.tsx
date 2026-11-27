@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BsGithub, BsStar, BsStarFill, BsStarHalf } from "react-icons/bs";
 import { HiOutlineChatAlt2 } from "react-icons/hi";
+import Container from "@/components/shared/Container";
 import { reviews, type Review } from "@/data/reviews";
 
 const FEEDBACK_EMAIL = "rishi.chaurasia.dev@gmail.com";
@@ -114,12 +115,12 @@ export default function ReviewsPageContent() {
     <main>
       <section
         aria-labelledby="reviews-heading"
-        className="border-b border-gray-200 bg-white px-6 py-16 text-center md:py-20"
+        className="border-b border-gray-200 bg-white py-16 text-center md:py-20"
       >
-        <div className="mx-auto max-w-2xl">
+        <Container className="max-w-2xl">
           <h1
             id="reviews-heading"
-            className="text-balance text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl"
+            className="text-balance text-4xl font-extrabold text-gray-900 sm:text-5xl"
           >
             What people are saying
           </h1>
@@ -150,11 +151,11 @@ export default function ReviewsPageContent() {
               </div>
             </div>
           )}
-        </div>
+        </Container>
       </section>
 
-      <section className="bg-(--bg) px-6 py-14 md:py-16">
-        <div className="mx-auto max-w-6xl">
+      <section className="bg-(--bg) py-16 md:py-24">
+        <Container>
           {reviews.length === 0 ? (
             <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white px-8 py-12 text-center shadow-sm">
               <span
@@ -173,7 +174,7 @@ export default function ReviewsPageContent() {
               </p>
               <a
                 href={feedbackHref}
-                className={`mt-6 inline-flex items-center gap-2 rounded-xl bg-(--brand-orange-ink) px-6 py-3 text-sm font-semibold text-white transition-[filter] duration-200 hover:brightness-110 ${focusRing}`}
+                className={`mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-(--brand-orange-ink) px-6 py-3 text-sm font-semibold text-white transition-[filter] duration-200 hover:brightness-110 ${focusRing}`}
               >
                 Share your feedback
               </a>
@@ -192,7 +193,7 @@ export default function ReviewsPageContent() {
                       type="button"
                       onClick={() => setActive(cat)}
                       aria-pressed={active === cat}
-                      className={`cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-200 ${focusRing} ${
+                      className={`min-h-10 cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-200 ${focusRing} ${
                         active === cat
                           ? "bg-(--brand-orange-ink) text-white"
                           : "bg-white text-(--text-gray) hover:bg-gray-100 hover:text-gray-900"
@@ -211,18 +212,18 @@ export default function ReviewsPageContent() {
               </ul>
             </>
           )}
-        </div>
+        </Container>
       </section>
 
       <section
         aria-labelledby="share-heading"
-        className="bg-(--primary) px-6 py-16 text-center md:py-20"
+        className="bg-(--primary) py-16 text-center md:py-20"
       >
-        <div className="mx-auto max-w-xl">
+        <Container className="max-w-xl">
           <BsGithub aria-hidden="true" className="mx-auto mb-4 h-10 w-10 text-white" />
           <h2
             id="share-heading"
-            className="text-balance text-3xl font-bold tracking-tight text-white"
+            className="text-balance text-3xl font-bold text-white"
           >
             Used CertCascade?
           </h2>
@@ -233,7 +234,7 @@ export default function ReviewsPageContent() {
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href={feedbackHref}
-              className="inline-flex items-center gap-2 rounded-xl bg-(--brand-orange) px-6 py-3 text-sm font-semibold text-gray-900 outline-none transition-[filter] duration-200 hover:brightness-105 focus-visible:ring-4 focus-visible:ring-white/40"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-(--brand-orange) px-6 py-3 text-sm font-semibold text-gray-900 outline-none transition-[filter] duration-200 hover:brightness-105 focus-visible:ring-4 focus-visible:ring-white/40"
             >
               Share your feedback
             </a>
@@ -241,13 +242,13 @@ export default function ReviewsPageContent() {
               href={REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-6 py-3 text-sm font-semibold text-white outline-none transition-colors duration-200 hover:bg-white/20 focus-visible:ring-4 focus-visible:ring-white/40"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white/10 px-6 py-3 text-sm font-semibold text-white outline-none transition-colors duration-200 hover:bg-white/20 focus-visible:ring-4 focus-visible:ring-white/40"
             >
               <BsGithub aria-hidden="true" className="h-4 w-4" />
               Star on GitHub
             </a>
           </div>
-        </div>
+        </Container>
       </section>
     </main>
   );

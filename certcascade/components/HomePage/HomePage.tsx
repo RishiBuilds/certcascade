@@ -216,8 +216,8 @@ export default function HomePage({ onCertificateChange }: HomePageProps) {
       </section>
 
       <section aria-label="Who uses CertCascade" className="border-y border-gray-200">
-        <div className="mx-auto flex max-w-6xl items-stretch">
-          <p className="hidden w-56 shrink-0 items-center border-r border-gray-200 px-6 py-5 text-xs leading-snug text-(--text-gray) sm:flex">
+        <Container className="flex items-stretch">
+          <p className="hidden w-56 shrink-0 items-center border-r border-gray-200 py-5 pr-6 text-xs leading-snug text-(--text-gray) sm:flex">
             Built for schools, colleges, event teams, and professionals
           </p>
           <div className="relative flex-1 overflow-hidden py-5">
@@ -251,7 +251,7 @@ export default function HomePage({ onCertificateChange }: HomePageProps) {
               ))}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       <section
@@ -273,7 +273,7 @@ export default function HomePage({ onCertificateChange }: HomePageProps) {
                 key={step.title}
                 className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-(--brand-orange)">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-(--brand-orange-ink)">
                   {index + 1}
                 </span>
                 <h3 className="mt-4 text-base font-semibold text-gray-900">
@@ -306,7 +306,7 @@ export default function HomePage({ onCertificateChange }: HomePageProps) {
                 key={feature.title}
                 className="rounded-2xl border border-gray-200 bg-white p-6"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-(--brand-orange)">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-(--brand-orange-ink)">
                   {feature.icon}
                 </span>
                 <h3 className="mt-4 text-base font-semibold text-gray-900">
