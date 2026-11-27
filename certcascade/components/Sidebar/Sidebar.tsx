@@ -33,7 +33,7 @@ const focusRing =
 const inputClass =
   "w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 outline-none transition-colors focus:border-(--brand-orange) focus:ring-2 focus:ring-(--brand-orange)/20";
 const labelClass = "flex flex-col gap-1 text-xs font-medium text-gray-600";
-const secondaryButton = `flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 ${focusRing}`;
+const secondaryButton = `flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 ${focusRing}`;
 
 export default function Sidebar({
   certificate,
@@ -363,14 +363,14 @@ export default function Sidebar({
   const usedColumns = new Set(fields.map((f) => f.column));
 
   const toggleClass = (active: boolean) =>
-    `flex h-9 flex-1 cursor-pointer items-center justify-center rounded-md border text-sm transition-colors ${focusRing} ${
+    `flex h-10 flex-1 cursor-pointer items-center justify-center rounded-lg border text-sm transition-colors ${focusRing} ${
       active
-        ? "border-(--brand-orange) bg-orange-50 text-(--brand-orange)"
+        ? "border-(--brand-orange) bg-orange-50 text-(--brand-orange-ink)"
         : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
     }`;
 
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white text-gray-900">
+    <aside className="flex w-full shrink-0 flex-col border-b border-gray-200 bg-white text-gray-900 lg:h-full lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r">
       <div className="p-5">
         <h2 className="mb-3 text-sm font-semibold text-gray-900">Data</h2>
 
@@ -380,8 +380,8 @@ export default function Sidebar({
               htmlFor="csv-data"
               className="group flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-gray-300 bg-white p-3 transition-colors focus-within:ring-4 focus-within:ring-(--brand-orange)/30 hover:border-(--brand-orange) hover:bg-orange-50/40"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-(--brand-orange)">
-                <GoUpload className="h-5 w-5" />
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-(--brand-orange-ink)">
+                <GoUpload aria-hidden="true" className="h-5 w-5" />
               </span>
 
               <span className="min-w-0">
@@ -426,7 +426,7 @@ export default function Sidebar({
               }}
               className={`${secondaryButton} w-full`}
             >
-              <GoPlus className="h-4 w-4" />
+              <GoPlus aria-hidden="true" className="h-4 w-4" />
               Paste CSV text
             </button>
           </div>
@@ -447,7 +447,7 @@ export default function Sidebar({
                 onClick={() => setIsTableOpen(true)}
                 className={secondaryButton}
               >
-                <GoEye className="h-4 w-4" />
+                <GoEye aria-hidden="true" className="h-4 w-4" />
                 View
               </button>
 
@@ -461,9 +461,9 @@ export default function Sidebar({
                     inputRef
                   )
                 }
-                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 outline-none transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700 focus-visible:ring-2 focus-visible:ring-red-500/40"
+                className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 outline-none transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700 focus-visible:ring-2 focus-visible:ring-red-500/40"
               >
-                <GoTrash className="h-4 w-4" />
+                <GoTrash aria-hidden="true" className="h-4 w-4" />
                 Delete
               </button>
             </div>
@@ -514,16 +514,16 @@ export default function Sidebar({
                         }
                         onClick={() => !already && addField(header)}
                         aria-disabled={already}
-                        className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${focusRing} ${
+                        className={`flex min-h-10 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${focusRing} ${
                           already
                             ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
-                            : "cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-(--brand-orange) hover:bg-orange-50 hover:text-(--brand-orange)"
+                            : "cursor-pointer border-gray-300 bg-white text-gray-700 hover:border-(--brand-orange) hover:bg-orange-50 hover:text-(--brand-orange-ink)"
                         }`}
                       >
                         {already ? (
-                          <GoCheck className="h-3.5 w-3.5" />
+                          <GoCheck aria-hidden="true" className="h-3.5 w-3.5" />
                         ) : (
-                          <GoPlus className="h-3.5 w-3.5" />
+                          <GoPlus aria-hidden="true" className="h-3.5 w-3.5" />
                         )}
                         {header}
                       </button>
@@ -556,9 +556,9 @@ export default function Sidebar({
                       type="button"
                       onClick={() => setSelectedId(f.id)}
                       aria-pressed={f.id === selectedId}
-                      className={`min-w-0 flex-1 cursor-pointer truncate rounded-lg px-3 py-2 text-left text-sm font-medium ${focusRing} ${
+                      className={`min-h-10 min-w-0 flex-1 cursor-pointer truncate rounded-lg px-3 py-2 text-left text-sm font-medium ${focusRing} ${
                         f.id === selectedId
-                          ? "text-(--brand-orange)"
+                          ? "text-(--brand-orange-ink)"
                           : "text-gray-700"
                       }`}
                     >
@@ -570,9 +570,9 @@ export default function Sidebar({
                       onClick={() => removeField(f.id)}
                       aria-label={`Remove ${f.column}`}
                       title="Remove"
-                      className={`mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 ${focusRing}`}
+                      className={`mr-1 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 ${focusRing}`}
                     >
-                      <GoX className="h-4 w-4" />
+                      <GoX aria-hidden="true" className="h-4 w-4" />
                     </button>
                   </li>
                 ))}
@@ -580,7 +580,6 @@ export default function Sidebar({
             )}
           </section>
 
-          {/* Style panel */}
           {selected && (
             <section className={`${sectionClass} space-y-4`}>
               <h3 className="text-sm font-semibold text-gray-900">
@@ -630,7 +629,7 @@ export default function Sidebar({
                     onChange={(e) =>
                       updateSelected({ color: e.target.value })
                     }
-                    className="h-9 w-full cursor-pointer rounded-md border border-gray-300 bg-white p-1"
+                    className="h-10 w-full cursor-pointer rounded-md border border-gray-300 bg-white p-1"
                   />
                 </label>
               </div>
@@ -714,32 +713,32 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={() => removeField(selected.id)}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-200 bg-white py-2 text-sm font-medium text-red-600 outline-none transition-colors hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-500/40"
+                className="flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-200 bg-white py-2 text-sm font-medium text-red-600 outline-none transition-colors hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-500/40"
               >
-                <GoTrash className="h-4 w-4" />
+                <GoTrash aria-hidden="true" className="h-4 w-4" />
                 Remove field
               </button>
             </section>
           )}
 
-          <section className="sticky bottom-0 mt-auto border-t border-gray-200 bg-white p-5">
+          <section className="mt-auto border-t border-gray-200 bg-white p-5 lg:sticky lg:bottom-0">
             {csvData.ok && rowCount > 0 && fields.length > 0 ? (
               <>
                 <button
                   type="button"
                   onClick={handleGenerate}
                   disabled={generating}
-                  className="relative flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-(--brand-orange) py-3 text-sm font-semibold text-white outline-none transition-[filter] hover:brightness-95 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/30 disabled:cursor-not-allowed disabled:hover:brightness-100"
+                  className="relative flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-(--brand-orange-ink) py-3 text-sm font-semibold text-white outline-none transition-[filter] hover:brightness-110 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100"
                 >
                   {generating && (
                     <span
                       aria-hidden="true"
-                      className="absolute inset-y-0 left-0 bg-black/15 transition-[width] duration-200"
+                      className="absolute inset-y-0 left-0 bg-black/20 transition-[width] duration-200"
                       style={{ width: `${progress}%` }}
                     />
                   )}
                   <span className="relative flex items-center gap-2">
-                    {!generating && <GoDownload className="h-4 w-4" />}
+                    {!generating && <GoDownload aria-hidden="true" className="h-4 w-4" />}
                     {generating
                       ? `Generating… ${progress}%`
                       : `Generate ${rowCount} certificate${
@@ -811,9 +810,9 @@ export default function Sidebar({
                 type="button"
                 onClick={() => setShowPasteModal(false)}
                 aria-label="Close"
-                className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 ${focusRing}`}
+                className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 ${focusRing}`}
               >
-                <GoX className="h-5 w-5" />
+                <GoX aria-hidden="true" className="h-5 w-5" />
               </button>
             </div>
 
@@ -847,7 +846,7 @@ Aditya Kulkarni,SPIT Mumbai`}
               <button
                 type="button"
                 onClick={() => setShowPasteModal(false)}
-                className={`cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 ${focusRing}`}
+                className={`min-h-10 cursor-pointer rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50 ${focusRing}`}
               >
                 Cancel
               </button>
@@ -855,7 +854,7 @@ Aditya Kulkarni,SPIT Mumbai`}
               <button
                 type="button"
                 onClick={handlePasteCsv}
-                className="cursor-pointer rounded-lg bg-(--brand-orange) px-5 py-2 text-sm font-semibold text-white outline-none transition-[filter] hover:brightness-95 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/30"
+                className="min-h-10 cursor-pointer rounded-xl bg-(--brand-orange-ink) px-5 py-2 text-sm font-semibold text-white outline-none transition-[filter] hover:brightness-110 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/30"
               >
                 Use this data
               </button>

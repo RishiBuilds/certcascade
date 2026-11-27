@@ -39,7 +39,7 @@ const ACCENT = "#E8884A";
 
 const focusRing =
   "outline-none focus-visible:ring-2 focus-visible:ring-(--brand-orange)/40";
-const iconButton = `flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent ${focusRing}`;
+const iconButton = `flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent ${focusRing}`;
 
 const shortcuts: { keys: string; action: string }[] = [
   { keys: "Arrow keys", action: "Nudge the selected field" },
@@ -690,7 +690,7 @@ export default function TemplateEditor({
         <button
           type="button"
           onClick={() => (onReselect ? onReselect() : window.location.reload())}
-          className={`flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 ${focusRing}`}
+          className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 ${focusRing}`}
         >
           <GoSync aria-hidden="true" className="h-4 w-4" />
           Re-select
@@ -732,7 +732,7 @@ export default function TemplateEditor({
                     e.currentTarget.blur();
                   }
                 }}
-                className="h-8 w-12 rounded-md border border-transparent bg-gray-50 text-center text-sm tabular-nums outline-none transition-colors focus:border-(--brand-orange) focus:bg-white"
+                className="h-10 w-12 rounded-md border border-transparent bg-gray-50 text-center text-sm tabular-nums outline-none transition-colors focus:border-(--brand-orange) focus:bg-white"
               />
               <span className="pr-1 tabular-nums">of {totalImages}</span>
             </label>
@@ -770,7 +770,7 @@ export default function TemplateEditor({
               onClick={() => setZoom(1)}
               title="Fit to screen"
               aria-label={`Zoom ${Math.round(displayScale * 100)} percent. Fit to screen`}
-              className={`h-8 min-w-14 cursor-pointer rounded-md px-2 text-sm font-medium tabular-nums text-gray-700 transition-colors hover:bg-gray-100 ${focusRing}`}
+              className={`h-10 min-w-14 cursor-pointer rounded-md px-2 text-sm font-medium tabular-nums text-gray-700 transition-colors hover:bg-gray-100 ${focusRing}`}
             >
               {Math.round(displayScale * 100)}%
             </button>
@@ -791,7 +791,7 @@ export default function TemplateEditor({
             onClick={downloadCurrent}
             disabled={!imgSize}
             title="Download this document as an image"
-            className={`flex cursor-pointer items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
+            className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
           >
             <GoDownload aria-hidden="true" className="h-4 w-4" />
             <span className="hidden lg:inline">Download this one</span>
@@ -815,7 +815,7 @@ export default function TemplateEditor({
                 id="editor-shortcuts"
                 role="dialog"
                 aria-label="Keyboard shortcuts"
-                className="absolute right-0 top-full z-30 mt-2 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl"
+                className="absolute right-0 top-full z-30 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-gray-200 bg-white p-4 shadow-xl"
               >
                 <h2 className="text-sm font-semibold text-gray-900">
                   Keyboard shortcuts
@@ -843,7 +843,13 @@ export default function TemplateEditor({
         </div>
       </div>
 
-      <div className="relative min-h-0 flex-1">
+      {fields.length === 0 && (
+        <div className="shrink-0 border-b border-orange-200 bg-orange-50/70 px-4 py-2 text-center text-xs font-medium text-(--brand-orange-ink)">
+          Add data in the sidebar, then click a column to place it on your template.
+        </div>
+      )}
+
+      <div className="relative min-h-[60dvh] flex-1 lg:min-h-0">
         <div
           ref={viewportRef}
           className="absolute inset-0 flex overflow-auto bg-[radial-gradient(circle,#d1d5db_1px,transparent_1px)] bg-size-[20px_20px] p-6 sm:p-10"
@@ -860,12 +866,6 @@ export default function TemplateEditor({
             onPointerLeave={onPointerLeave}
           />
         </div>
-
-        {fields.length === 0 && (
-          <p className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-gray-200 bg-white px-4 py-2 text-center text-sm text-(--text-gray) shadow-sm">
-            Add data, then click a column to place it on your template.
-          </p>
-        )}
       </div>
     </div>
   );

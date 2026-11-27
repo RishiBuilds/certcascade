@@ -41,9 +41,9 @@ const Table = ({ csvData, rowCount, onCellChange, onClose }: TableProps) => {
             type="button"
             onClick={onClose}
             aria-label="Close CSV table"
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 outline-none transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-(--brand-orange)/40"
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 outline-none transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-(--brand-orange)/40"
           >
-            <GoX className="h-5 w-5" />
+            <GoX aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>
 
@@ -104,7 +104,7 @@ const Table = ({ csvData, rowCount, onCellChange, onClose }: TableProps) => {
           <button
             type="button"
             onClick={onClose}
-            className="cursor-pointer rounded-lg bg-(--brand-orange) px-5 py-2 text-sm font-semibold text-white outline-none transition-[filter] hover:brightness-95 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/30"
+            className="min-h-10 cursor-pointer rounded-xl bg-(--brand-orange-ink) px-5 py-2 text-sm font-semibold text-white outline-none transition-[filter] hover:brightness-110 focus-visible:ring-4 focus-visible:ring-(--brand-orange)/30"
           >
             Done
           </button>
